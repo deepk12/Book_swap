@@ -1,0 +1,46 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("postgresql://postgres:deepak@localhost:5432/postgres")
+}
+
+
+// Add this Enum for request status
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// ... User and Book models from before ...
+
+model User {
+  //... other fields
+  books     Book[]
+  // Add this: A user can make many requests
+  requestsMade Request[]
+}
+
+model Book {
+  //... other fields
+  owner     User @relation(fields: [ownerId], references: [id])
+  ownerId   Int
+  // Add this: A book can have many requests
+  requests  Request[]
+}
+
+// Add this new model for Requests
+model Request {
+  id        Int      @id @default(autoincrement())
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime @default(now())
+
+  // Who is making the request?
+  requester   User     @relation(fields: [requesterId], references: [id])
+  requesterId Int
+
+  // What book is being requested?
+  book        Book     @relation(fields: [bookId], references: [id])
+  bookId      Int
+}
