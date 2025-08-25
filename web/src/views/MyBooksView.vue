@@ -139,3 +139,124 @@ export default {
   }
 };
 </script>
+<style scoped>
+/* Myntra-like Styling for MyBooksView */
+
+/* Use a clean, modern font */
+body, h2, button, table, p {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+div {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* Heading styles */
+h2 {
+  font-size: 28px;
+  font-weight: 500;
+  color: #3e4152;
+  margin-bottom: 20px;
+}
+
+/* Button styles */
+button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-transform: uppercase;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+/* Primary button (Add New Book) */
+button:first-of-type {
+  background-color: #ff3f6c; /* Myntra's accent color */
+  color: #fff;
+  border-color: #ff3f6c;
+}
+
+/* Action buttons in the table */
+td button {
+  background: transparent;
+  color: #3e4152;
+  border: none;
+  font-weight: 400;
+  padding: 5px;
+  text-transform: capitalize;
+}
+
+td button:hover {
+  color: #ff3f6c; /* Hover effect with accent color */
+  background: transparent;
+}
+
+/* Table styles */
+.book-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 30px;
+  border: 1px solid #eaeaec;
+}
+
+thead tr {
+  background-color: #f7f7f7;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px 15px;
+  color: #535766;
+  font-size: 14px;
+  border-bottom: 1px solid #eaeaec;
+}
+
+th {
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #282c3f;
+}
+
+/* Last row does not have a bottom border */
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Message for no books found */
+p {
+  color: #8c8c8c;
+  font-style: italic;
+  text-align: center;
+  margin-top: 30px;
+}
+
+/* Basic form styling (for BookForm.vue) */
+/* You would likely apply this in BookForm.vue's own style block */
+.book-form-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #eaeaec;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+/* Simple error message styling */
+.error-message {
+  color: #ff3f6c;
+  background-color: #fff0f5;
+  border: 1px solid #ff3f6c;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 20px;
+  text-align: center;
+}
+</style>
