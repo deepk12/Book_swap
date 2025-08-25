@@ -77,23 +77,21 @@ app.post('/api/login', async (req, res) => {
 
 // --- JWT AUTHENTICATION MIDDLEWARE ---
 
+
 function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-    if (token == null) {
-        return res.sendStatus(401); // Unauthorized
-    }
+  if (!token) return res.status(401).json({ error: 'No token provided' });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.sendStatus(403); // Forbidden
-        }
-        req.user = user;
-        next();
-    });
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+
+    // decoded contains userId, email, etc from jwt.sign()
+    req.user = decoded;  
+    next();
+  });
 }
-
 
 // --- PROTECTED ROUTE EXAMPLE ---
 
@@ -113,18 +111,14 @@ app.get('/api/profile', authenticateToken, async (req, res) => {
 // --- BOOK ROUTES ---
 
 // 1. Create a new book (Protected)
-app.post('/api/books', authenticateToken, async (req, res) => {
+
+app.post('/api/add-books', authenticateToken, async (req, res) => {
   const { title, author, description } = req.body;
-  const ownerId = req.user.userId; // Get user ID from the JWT
+  const ownerId = req.user.userId; // now works ✅
 
   try {
     const newBook = await prisma.book.create({
-      data: {
-        title,
-        author,
-        description,
-        ownerId,
-      },
+      data: { title, author, description, ownerId },
     });
     res.status(201).json(newBook);
   } catch (error) {
@@ -132,8 +126,27 @@ app.post('/api/books', authenticateToken, async (req, res) => {
   }
 });
 
+// app.post('/api/add-books', async (req, res) => {
+//   const { title, author, description } = req.body;
+//   const ownerId = req.user.userId; // Get user ID from the JWT
+
+//   try {
+//     const newBook = await prisma.book.create({
+//       data: {
+//         title,
+//         author,
+//         description,
+//         ownerId,
+//       },
+//     });
+//     res.status(201).json(newBook);
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to create book.' });
+//   }
+// });
+
 // 2. Get all available books (Public)
-app.get('/api/books', async (req, res) => {
+app.get('/api/get-books', async (req, res) => {
   try {
     const books = await prisma.book.findMany({
       where: { status: 'AVAILABLE' },
@@ -144,6 +157,70 @@ app.get('/api/books', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch books.' });
   }
 });
+
+
+// DELETE book by id
+app.delete('/api/delete-book/:id', authenticateToken, async (req, res) => {
+  const bookId = parseInt(req.params.id, 10);
+
+  try {
+    const book = await prisma.book.findUnique({
+      where: { id: bookId }
+    });
+
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+
+    // Check ownership using ownerId (from schema)
+    if (book.ownerId !== req.user.userId) {
+      return res.status(403).json({ error: 'Not authorized to delete this book' });
+    }
+
+    await prisma.book.delete({
+      where: { id: bookId }
+    });
+
+    res.json({ message: 'Book deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting book:', error);
+    res.status(500).json({ error: 'Failed to delete book.' });
+  }
+});
+
+
+// Update book
+// Update book
+app.post('/api/update/:id', authenticateToken, async (req, res) => {
+  const bookId = parseInt(req.params.id, 10);
+  const { title, author, condition } = req.body;
+
+  try {
+    const book = await prisma.book.findUnique({ where: { id: bookId } });
+
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found' });
+    }
+
+    if (book.ownerId !== req.user.userId) {
+      return res.status(403).json({ error: 'Not authorized to update this book' });
+    }
+
+    const updatedBook = await prisma.book.update({
+      where: { id: bookId },
+      data: { title, author, condition }
+    });
+
+    res.json(updatedBook);
+  } catch (error) {
+    console.error('Error updating book:', error);
+    res.status(500).json({ error: 'Failed to update book.' });
+  }
+});
+
+
+
+
 
 
 // index.js
