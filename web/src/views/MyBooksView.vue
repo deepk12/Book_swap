@@ -1,10 +1,9 @@
-<!-- MyBooksView.vue -->
+// MyBooksView.vue
 <template>
   <div>
     <h2>My Books</h2>
     <button @click="showForm = true">Add New Book</button>
 
-    <!-- BookForm: used for both Add & Edit -->
     <BookForm 
       v-if="showForm" 
       :book="selectedBook" 
@@ -79,29 +78,26 @@ export default {
       try {
         if (this.selectedBook) {
           // Update existing book
-          const response = await api.post(
-  `/update/${this.selectedBook.id}`, 
-  bookData,
-  {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem("token")}`
-    }
-  }
-);
-await this.loadBooks();
-
-          const index = this.myBooks.findIndex(b => b.id === this.selectedBook.id);
-          this.myBooks.splice(index, 1, response.data); // reactive update
+          await api.post(
+            `/update/${this.selectedBook.id}`, 
+            bookData,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+              }
+            }
+          );
         } else {
           // Add new book
-          const response = await api.post('/add-books', bookData, {
+          await api.post('/add-books', bookData, {
             headers: {
               'Content-Type': 'application/json'
             }
           });
-          this.myBooks = [...this.myBooks, response.data];
         }
+        // After adding or updating, reload the book list from the server
+        await this.loadBooks();
         this.closeForm();
       } catch (err) {
         console.error('Failed to save book:', err);
